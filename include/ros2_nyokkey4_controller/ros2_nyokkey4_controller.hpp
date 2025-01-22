@@ -41,50 +41,42 @@ namespace ros2_nyokkey4_controller
 
         controller_interface::CallbackReturn on_init() override;
         controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State &previous_state) override;
-        controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State &previous_state) override;
+        // controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State &previous_state) override;
         controller_interface::return_type update(const rclcpp::Time &time, const rclcpp::Duration &period) override;
         void read_state_from_state_interfaces(JointTrajectoryPoint & state); // hiding
 
 
     private:
         void update_pids();
-        template <typename T>
-        void assign_interface_from_point(const T & joint_interface, const std::vector<double> & trajectory_point_interface)
-        {
-            for (size_t index = 0; index < dof_; ++index)
-            {
-            joint_interface[index].get().set_value(trajectory_point_interface[index]);
-            }
-        }
-        struct JointConfig
-        {
-            std::string name;
-            double amplitude;
-            double inv_amplitude;
-            double frequency;
-            double phase;
-            bool is_target;
-            double current_position;
-            double current_velocity;
-            double current_effort;
-            int16_t encoder_diff;
-        };
-        std::vector<JointConfig> joint_configs_;
-        std::vector<std::string> joint_names_;
-        std::vector<std::string> state_interface_types_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_position_state_interface_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_velocity_state_interface_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_effort_state_interface_;
-        std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_encoder_diff_state_interface_;
-        std::unordered_map<
-            std::string, std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> *>
-            state_interface_map_ = {
-                {"position", &joint_position_state_interface_},
-                {"velocity", &joint_velocity_state_interface_},
-                {"effort", &joint_effort_state_interface_},
-                {"encoder_diff", &joint_encoder_diff_state_interface_}};
-        double homing_velocity_;    // ゼロ位置への移動速度
-        double position_tolerance_; // ゼロ位置の許容誤差
+        // struct JointConfig
+        // {
+        //     std::string name;
+        //     double amplitude;
+        //     double inv_amplitude;
+        //     double frequency;
+        //     double phase;
+        //     bool is_target;
+        //     double current_position;
+        //     double current_velocity;
+        //     double current_effort;
+        //     int16_t encoder_diff;
+        // };
+        // std::vector<JointConfig> joint_configs_;
+        // std::vector<std::string> joint_names_;
+        // std::vector<std::string> state_interface_types_;
+        // std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_position_state_interface_;
+        // std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_velocity_state_interface_;
+        // std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_effort_state_interface_;
+        // std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> joint_encoder_diff_state_interface_;
+        // std::unordered_map<
+        //     std::string, std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>> *>
+        //     state_interface_map_ = {
+        //         {"position", &joint_position_state_interface_},
+        //         {"velocity", &joint_velocity_state_interface_},
+        //         {"effort", &joint_effort_state_interface_},
+        //         {"encoder_diff", &joint_encoder_diff_state_interface_}};
+        // double homing_velocity_;    // ゼロ位置への移動速度
+        // double position_tolerance_; // ゼロ位置の許容誤差
         rclcpp::Time last_log_time_;
     };
 

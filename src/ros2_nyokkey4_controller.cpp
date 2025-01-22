@@ -23,11 +23,11 @@ namespace ros2_nyokkey4_controller
         {
             auto_declare<std::vector<std::string>>("joints", std::vector<std::string>());
             auto_declare<std::vector<std::string>>("target_joints", std::vector<std::string>());
-            auto_declare<std::vector<double>>("amplitudes", std::vector<double>());
-            auto_declare<std::vector<double>>("frequencies", std::vector<double>());
-            state_interface_types_ = auto_declare<std::vector<std::string>>("state_interfaces", state_interface_types_);
-            auto_declare<double>("homing_velocity", 0.1);     // ゼロ位置への移動速度
-            auto_declare<double>("position_tolerance", 0.01); // 位置許容誤差
+            // auto_declare<std::vector<double>>("amplitudes", std::vector<double>());
+            // auto_declare<std::vector<double>>("frequencies", std::vector<double>());
+            // state_interface_types_ = auto_declare<std::vector<std::string>>("state_interfaces", state_interface_types_);
+            // auto_declare<double>("homing_velocity", 0.1);     // ゼロ位置への移動速度
+            // auto_declare<double>("position_tolerance", 0.01); // 位置許容誤差
         }
         catch (const std::exception &e)
         {
@@ -43,70 +43,54 @@ namespace ros2_nyokkey4_controller
         auto ret = joint_trajectory_controller::JointTrajectoryController::on_configure(previous_state);
 
         // パラメータの取得
-        auto joints = get_node()->get_parameter("joints").as_string_array();
-        auto target_joints = get_node()->get_parameter("target_joints").as_string_array();
-        auto amplitudes = get_node()->get_parameter("amplitudes").as_double_array();
-        auto frequencies = get_node()->get_parameter("frequencies").as_double_array();
-        joint_names_ = joints;
-        homing_velocity_ = get_node()->get_parameter("homing_velocity").as_double();
-        position_tolerance_ = get_node()->get_parameter("position_tolerance").as_double();
+        // auto joints = get_node()->get_parameter("joints").as_string_array();
+        // auto target_joints = get_node()->get_parameter("target_joints").as_string_array();
+        // auto amplitudes = get_node()->get_parameter("amplitudes").as_double_array();
+        // auto frequencies = get_node()->get_parameter("frequencies").as_double_array();
+        // joint_names_ = joints;
+        // homing_velocity_ = get_node()->get_parameter("homing_velocity").as_double();
+        // position_tolerance_ = get_node()->get_parameter("position_tolerance").as_double();
 
         // 設定のバリデーション
-        if (amplitudes.size() != target_joints.size() ||
-            frequencies.size() != target_joints.size())
-        {
-            RCLCPP_ERROR(get_node()->get_logger(),
-                         "The number of amplitudes and frequencies must match the number of target joints");
-            return controller_interface::CallbackReturn::ERROR;
-        }
+        // if (amplitudes.size() != target_joints.size() ||
+        //     frequencies.size() != target_joints.size())
+        // {
+        //     RCLCPP_ERROR(get_node()->get_logger(),
+        //                  "The number of amplitudes and frequencies must match the number of target joints");
+        //     return controller_interface::CallbackReturn::ERROR;
+        // }
 
         // ジョイント設定の初期化
-        joint_configs_.clear();
+        // joint_configs_.clear();
 
         // 全ジョイントの設定を作成
-        for (const auto &joint : joints)
-        {
-            JointConfig config;
-            config.name = joint;
-            config.is_target = false;
-            config.amplitude = 0.0;
-            config.frequency = 0.0;
-            config.phase = 0.0;
+        // for (const auto &joint : joints)
+        // {
+        //     JointConfig config;
+        //     config.name = joint;
+        //     config.is_target = false;
+        //     config.amplitude = 0.0;
+        //     // config.frequency = 0.0;
+        //     // config.phase = 0.0;
 
-            // 制御対象のジョイントかチェック
-            auto it = std::find(target_joints.begin(), target_joints.end(), joint);
-            if (it != target_joints.end())
-            {
-                size_t idx = std::distance(target_joints.begin(), it);
-                config.is_target = true;
-                config.amplitude = amplitudes[idx];
-                config.frequency = frequencies[idx];
-            }
+        //     // 制御対象のジョイントかチェック
+        //     auto it = std::find(target_joints.begin(), target_joints.end(), joint);
+        //     if (it != target_joints.end())
+        //     {
+        //         size_t idx = std::distance(target_joints.begin(), it);
+        //         config.is_target = true;
+        //         config.amplitude = amplitudes[idx];
+        //         // config.frequency = frequencies[idx];
+        //     }
 
-            joint_configs_.push_back(config);
-        }
+        //     joint_configs_.push_back(config);
+        // }
 
         last_log_time_ = get_node()->get_clock()->now();
 
         return ret;
     }
 
-    controller_interface::CallbackReturn Ros2Nyokkey4Controller::on_activate(const rclcpp_lifecycle::State &)
-    {
-        // clear out vectors in case of restart
-        joint_position_state_interface_.clear();
-        joint_velocity_state_interface_.clear();
-        joint_effort_state_interface_.clear();
-
-        // assign state interfaces
-        for (auto &interface : state_interfaces_)
-        {
-            RCLCPP_INFO(get_node()->get_logger(), "Interface: %s", interface.get_interface_name().c_str());
-            state_interface_map_[interface.get_interface_name()]->push_back(interface);
-        }
-
-        return CallbackReturn::SUCCESS;
-    }
 
     // These codes were from original joint_trajectory_controller
     // https://github.com/ros-controls/ros2_controllers/blob/master/joint_trajectory_controller/src/joint_trajectory_controller.cpp
@@ -305,7 +289,7 @@ namespace ros2_nyokkey4_controller
                 // assign_interface_from_point(joint_command_interface_[0], state_desired_.positions);
                 for (size_t index = 0; index < dof_; ++index)
                     {
-                    joint_command_interface_[0][index].get().set_value(state_desired_.positions[index] * joint_configs_[index].amplitude);
+                    joint_command_interface_[0][index].get().set_value(state_desired_.positions[index] * 1800000.0);//joint_configs_[index].amplitude);
                     }
                 }
                 if (has_velocity_command_interface_)
@@ -443,7 +427,7 @@ namespace ros2_nyokkey4_controller
         // assign_point_from_interface(state.positions, joint_state_interface_[0]);
         for (size_t index = 0; index < dof_; ++index)
         {
-        state.positions[index] = joint_state_interface_[0][index].get().get_value() * joint_configs_[index].inv_amplitude;
+        state.positions[index] = joint_state_interface_[0][index].get().get_value() * (1/1800000.0);//joint_configs_[index].inv_amplitude;
         }
         // velocity and acceleration states are optional
         if (has_velocity_state_interface_)
@@ -491,4 +475,5 @@ namespace ros2_nyokkey4_controller
 
 
 PLUGINLIB_EXPORT_CLASS(
-    ros2_nyokkey4_controller::Ros2Nyokkey4Controller, controller_interface::ControllerInterface)
+    ros2_nyokkey4_controller::Ros2Nyokkey4Controller, 
+    controller_interface::ControllerInterface)

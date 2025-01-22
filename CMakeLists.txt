@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.8)
 project(ros2_nyokkey4_controller)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -80,5 +80,26 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+add_executable(test_plugin_loader test/test_plugin_loader.cpp)
+ament_target_dependencies(test_plugin_loader
+  controller_interface
+  pluginlib
+  rclcpp
+)
+install(TARGETS test_plugin_loader
+  DESTINATION lib/${PROJECT_NAME})
+
+
+install(
+  TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+)
+
+# install plugin
+install(
+  FILES ros2_nyokkey4_controller_plugin.xml
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_package()
